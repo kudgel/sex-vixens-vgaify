@@ -48,3 +48,5 @@ The Python PCX encoder doesn't need to generate PCX-compatible files. We could l
 
 The VGA palette swap every time we load an image isn't ideal. Can we lock the VGA palette while we update it
 and swap over quickly?
+
+Can we load images into EMS/XMS instead?
