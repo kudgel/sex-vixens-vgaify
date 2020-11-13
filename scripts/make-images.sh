@@ -79,7 +79,7 @@ ls -1 $BASEDIR/out/ |
 	ppmtopcx -8bit -palette=<(pnmcat -lr $BASEDIR/ega.ppm $BASEDIR/colormap/{}.ppm) > $BASEDIR/pcx/`basename -s .png {}`.pcx' | bash
 ls -1 $BASEDIR/pcx/ | 
 	xargs -n1 -I{} echo 'cat $BASEDIR/pcx/{} | 
-	scripts/trim_pcx.py > $BASEDIR/vgamap/`basename -s .pcx {}`.VIQ' | sh
+	scripts/trim_pcx.py $BASEDIR/colormap/`basename -s .pcx {}`.png.ppm > $BASEDIR/vgamap/`basename -s .pcx {}`.VIQ && echo {} \-\> `basename -s .pcx {}`.VIQ' | sh
 echo `ls -l $BASEDIR/vgamap | wc -l` images processed
 
 echo
