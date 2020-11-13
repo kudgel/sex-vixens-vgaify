@@ -45,29 +45,6 @@ rm $BASEDIR/out/scorebar3.png
 echo `ls -l $BASEDIR/out | wc -l` files
 
 
-# Build a colormap for each file
-
-echo '==================================================='
-echo ' Get colormaps'
-echo '==================================================='
-ls -1 $BASEDIR/out/ |
-	xargs -n1 -I{} echo "pngtopnm $BASEDIR/out/{} | pnmcolormap all -sort > $BASEDIR/colormap/{}.ppm 2> >(grep found 1>&2)" |
-	bash
-
-
-# Build the EGA colormap
-
-echo '==================================================='
-echo ' Build the EGA colormap'
-echo '==================================================='
-# Generate the base palette
-(
-	echo 'P6 16 1 255'
-	printf '\x00\x00\x00\x00\x00\xaa\x00\xaa\x00\x00\xaa\xaa\xaa\x00\x00\xaa\x00\xaa\xaaU\x00\xaa\xaa\xaaUUUUU\xffU\xffUU\xff\xff\xffUU\xf6n\xc3\xff\xffD\xff\xff\xff'
-) | pnmtoplainpnm > $BASEDIR/ega.ppm
-echo 'Done (16 colors)'
-
-
 # Generate PCX files
 echo '==================================================='
 echo ' Convert to a trimmed PCX using the global colormap'
@@ -76,10 +53,7 @@ echo '==================================================='
 ls -1 $BASEDIR/out/ | 
 	xargs -n1 -I{} echo 'cat $BASEDIR/out/{} | 
 	pngtopnm | 
-	ppmtopcx -8bit -palette=<(pnmcat -lr $BASEDIR/ega.ppm $BASEDIR/colormap/{}.ppm) > $BASEDIR/pcx/`basename -s .png {}`.pcx' | bash
-ls -1 $BASEDIR/pcx/ | 
-	xargs -n1 -I{} echo 'cat $BASEDIR/pcx/{} | 
-	scripts/trim_pcx.py $BASEDIR/colormap/`basename -s .pcx {}`.png.ppm > $BASEDIR/vgamap/`basename -s .pcx {}`.VIQ && echo {} \-\> `basename -s .pcx {}`.VIQ' | sh
+	scripts/trim_pcx.py > $BASEDIR/vgamap/`basename -s .png {}`.VIQ && echo {} \-\> `basename -s .png {}`.VIQ' | sh
 echo `ls -l $BASEDIR/vgamap | wc -l` images processed
 
 echo

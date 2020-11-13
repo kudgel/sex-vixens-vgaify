@@ -1,26 +1,52 @@
 #!/usr/bin/env python3
 import sys
+import re
 
-bits = open(sys.argv[1], 'rb').read().replace(b"\n", b' ').split(b' ')
-pal_count = int(bits[1]) * int(bits[2])
-pal_count = pal_count + 10
+ega = b'\x00\x00\x00\x00\x00\xaa\x00\xaa\x00\x00\xaa\xaa\xaa\x00\x00\xaa\x00\xaa\xaaU\x00\xaa\xaa\xaaUUUUU\xffU\xffUU\xff\xff\xffUU\xf6n\xc3\xff\xffD\xff\xff\xff'
+pal = re.findall(b'...', ega)
+pal_index = {}
+for p, i in enumerate(pal):
+    pal_index[i] = p
 
 all = bytearray(sys.stdin.buffer.read())
-len1 = len(all)
+all = all.split(b'255', 2)[1][1:]
 
-# Pre-shift the palette
-pal = [x>>2 for x in all[-768:]]
+pixels = re.findall(b'...', all)
 
-# # Trim the palette and add zeros
-# pal = pal[:pal_count*3]
-# pal.extend([0] * 768)
-# # Back to 768
-# pal = pal[:768]
+out = bytearray()
 
-all[-768:] = pal
+last = ''
+count = 1
 
-# Just to be sure
-assert(len1 == len(all))
+def write_pixel(last, count):
+    if last == '':
+        return
+    while count >= 63:
+        out.append(0xff)
+        out.append(pal_index[last])
+        count -= 63
+    if count == 0:
+        pass
+    elif count == 1:
+        out.append(pal_index[last])
+    else:
+        out.append(0xc0 + count)
+        out.append(pal_index[last])
 
-# Trim PCX header only (leave palette)
-sys.stdout.buffer.write(all[128:])
+for pixel in pixels:
+    if pal_index.get(pixel) == None:
+        pal_index[pixel] = len(pal)
+        pal.append(pixel)
+    if last == pixel:
+        count = count + 1
+    else:
+        write_pixel(last, count)
+        last = pixel
+        count = 1
+
+write_pixel(last, count)
+
+sys.stdout.buffer.write(out)
+sys.stdout.buffer.write(b'\x0c')
+for p in pal:
+    sys.stdout.buffer.write(bytearray([b>>2 for b in p]))
