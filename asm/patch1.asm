@@ -16,60 +16,6 @@ push ds
 pushf
 cld
 
-; Use the last byte of video memory as a flag for whether we've loaded the palette
-mov ax, 0xa000
-mov es, ax
-xor si, si
-dec si
-cmp byte [es:si], 0x99
-je .skippal
-mov byte [es:si], 0x99
-
-; point to VGA.PAL
-call near .getip1
-.getip1: 
-pop dx
-add dx, (.flag - $ + 2)
-
-; open VGA.PAL -> handle in bx
-mov ax, cs
-mov ds, ax
-mov ax, 3d00h
-int 21h
-mov bx, ax
-jc .error
-
-; read file -> afa0:0000 (offscreen address)
-mov ax, 0xafa0
-mov ds, ax
-mov ax, 3f00h
-mov cx, (256 * 3)
-xor dx, dx
-int 21h
-jc .error
-
-; close file
-mov ax, 3e00h
-int 21h
-jc .error
-
-; splat palette
-mov dx, 3c6h
-mov al, 0xff
-out dx, al
-inc dx
-inc dx
-xor al, al
-out dx, al
-inc dx
-mov ax, 0xafa0
-mov ds, ax
-mov si, 0
-mov cx, (256 * 3)
-rep outsb
-
-.skippal:
-
 ; ds:si = param
 mov ax, word [ss:bp + 8] ; param2
 mov ds, ax
@@ -140,5 +86,3 @@ retf
 
 .flag:
 db 4
-
-db 'VGA.PAL', 0

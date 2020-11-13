@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 
-b = bytearray(open('sexvixen/SEXVIXEN.EXE', 'rb').read())
+b = bytearray(open('inputs/sexvixen/SEXVIXEN.EXE', 'rb').read())
 
 def patch(b, in_bytes, out_bytes):
     in_bytes = bytes([int('0x%s' % x, 16) for x in in_bytes.split(' ')])
@@ -53,14 +53,14 @@ b = patch(b, '59 80 3E 5e 93 0D',
 #             'CB 8B EC 56 57 8B 46 08 8E C0 8B 7E 06 8B 46 0A 1E 50')
 
 # draw bitmap
-b = patch_variable(b, (0x140 - 0x05), '55 8b ec 56 57 8b 46 08 8e c0 8b 7e 06 8b 46 0a', open('patches/patch1.com', 'rb').read())
+b = patch_variable(b, (0x140 - 0x05), '55 8b ec 56 57 8b 46 08 8e c0 8b 7e 06 8b 46 0a', open('out/asm/patch1.com', 'rb').read())
 
 # Require VGA
 # int 10h AH = 1Ah
 # http://www.powernet.co.za/info/tables/detect/Vga.Htm
 b = patch(b, 'B4 12 B3 10 9A FA 03', 'b8 00 1a 90 9A FA 03')
 # AL = 1Ah on success
-b = patch_variable(b, 15, '80 fb 10 73 05 b8 01 00 eb 02 33 c0 eb 00 cb', open('patches/patch3.com', 'rb').read())
+b = patch_variable(b, 15, '80 fb 10 73 05 b8 01 00 eb 02 33 c0 eb 00 cb', open('out/asm/patch3.com', 'rb').read())
 
 # TITLE
 # 0x2176 -> size

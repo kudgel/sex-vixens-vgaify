@@ -55,27 +55,18 @@ ls -1 $BASEDIR/out/ |
 	bash
 
 
-# Build the global colormap
+# Build the EGA colormap
 
 echo '==================================================='
-echo ' Build the global colormap'
+echo ' Build the EGA colormap'
 echo '==================================================='
 # Generate the base palette
 (
-	echo 'P6 1 16 255'
+	echo 'P6 16 1 255'
 	printf '\x00\x00\x00\x00\x00\xaa\x00\xaa\x00\x00\xaa\xaa\xaa\x00\x00\xaa\x00\xaa\xaaU\x00\xaa\xaa\xaaUUUUU\xffU\xffUU\xff\xff\xffUU\xf6n\xc3\xff\xffD\xff\xff\xff'
-) | pnmtoplainpnm > $BASEDIR/colormap/ega.ppm
-# pnmremap -mapfile=$BASEDIR/finalcolors.ppm < $BASEDIR/ega.ppm > $BASEDIR/egamapped.ppm
-pnmcat -tb $BASEDIR/colormap/* | pnmcolormap all -sort | pnmtoplainpnm > $BASEDIR/finalcolors.ppm
-# Sort the EGA colors into the right spot
-cat $BASEDIR/finalcolors.ppm | tail -n +4 | xargs -n 3 | sort > /tmp/colors1.txt
-cat $BASEDIR/colormap/ega.ppm | tail -n +4 | xargs -n 3 | sort > /tmp/colors2.txt
-(
-	echo P3
-	echo 1 `wc -l < /tmp/colors1.txt` 255
-	cat $BASEDIR/colormap/ega.ppm | tail -n +4
-	comm -2 -3 /tmp/colors1.txt /tmp/colors2.txt
-) | pnmtopnm > $BASEDIR/finalcolors.ppm
+) | pnmtoplainpnm > $BASEDIR/ega.ppm
+echo 'Done (16 colors)'
+
 
 # Generate PCX files
 echo '==================================================='
@@ -85,7 +76,7 @@ echo '==================================================='
 ls -1 $BASEDIR/out/ | 
 	xargs -n1 -I{} echo 'cat $BASEDIR/out/{} | 
 	pngtopnm | 
-	ppmtopcx -8bit -palette=$BASEDIR/finalcolors.ppm > $BASEDIR/pcx/`basename -s .png {}`.pcx' | sh
+	ppmtopcx -8bit -palette=<(pnmcat -lr $BASEDIR/ega.ppm $BASEDIR/colormap/{}.ppm) > $BASEDIR/pcx/`basename -s .png {}`.pcx' | bash
 ls -1 $BASEDIR/pcx/ | 
 	xargs -n1 -I{} echo 'cat $BASEDIR/pcx/{} | 
 	scripts/trim_pcx.py > $BASEDIR/vgamap/`basename -s .pcx {}`.VIQ' | sh
@@ -93,7 +84,6 @@ echo `ls -l $BASEDIR/vgamap | wc -l` images processed
 
 echo
 echo Moving output files to out/disk...
-cat $BASEDIR/finalcolors.ppm | scripts/vgapal.py > out/disk/VGA.PAL
 cp $BASEDIR/vgamap/*.VIQ out/disk/
 
 echo Done.
