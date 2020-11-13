@@ -24,4 +24,4 @@ cp out/asm/vgadetect.com out/disk/VGADET.COM
 cp scripts/SEXVIXEN.BAT out/disk/
 
 # Check MD5 of outputs (this doesn't work inline for some reason)
-bash -c 'diff buildhash/0.9.MD5SUM <(find out/disk -type f | xargs openssl md5 | sort) || (echo Mismatched output && exit 1)'
+bash -c 'diff buildhash/1.0.MD5SUM <(find out/disk -type f | xargs openssl md5 | sort) || (echo Mismatched output && exit 1)'
