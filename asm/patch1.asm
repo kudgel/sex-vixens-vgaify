@@ -16,6 +16,22 @@ push ds
 pushf
 cld
 
+; zero palette
+mov dx, 3c6h
+mov al, 0xff
+out dx, al
+inc dx
+inc dx
+mov al, 16 ; start after EGA
+out dx, al
+inc dx
+mov al, 0fh
+mov cx, ((256 - 16) * 3)
+.loop_pal:
+out dx, al
+loop .loop_pal
+
+
 ; ds:si = param
 mov ax, word [ss:bp + 8] ; param2
 mov ds, ax
@@ -51,6 +67,22 @@ pop cx ; unstash cx
 loop .loop
 
 .done:
+
+; 0c
+lodsb
+
+; splat real palette
+mov dx, 3c6h
+mov al, 0xff
+out dx, al
+inc dx
+inc dx
+xor al, al
+out dx, al
+inc dx
+mov cx, (256 * 3)
+rep outsb
+
 
 call near .getip
 .getip: 
